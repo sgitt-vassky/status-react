@@ -42,17 +42,12 @@ function amountParameterBox(params, context) {
         params["bot-db"] = {};
     }
 
-    var contactAddress;
-    if (params["bot-db"]["public"] && params["bot-db"]["public"]["recipient"]) {
-        contactAddress = params["bot-db"]["public"]["recipient"]["address"];
-    } else {
-        contactAddress = null;
-    }
+    var contactAddress = context.to;
 
     var txData;
     var amount;
     try {
-        amount = params.args[1];
+        amount = params.args[0];
         txData = {
             to: contactAddress,
             value: web3.toWei(amount) || 0
@@ -248,16 +243,6 @@ function amountParameterBox(params, context) {
 
 var paramsSend = [
     {
-        name: "recipient",
-        type: status.types.TEXT,
-        suggestions: function (params) {
-            return {
-                title: I18n.t('send_title'),
-                markup: status.components.chooseContact(I18n.t('send_choose_recipient'), "recipient", 0)
-            };
-        }
-    },
-    {
         name: "amount",
         type: status.types.NUMBER,
         suggestions: amountParameterBox
@@ -267,15 +252,6 @@ var paramsSend = [
 function validateSend(params, context) {
     if (!params["bot-db"]) {
         params["bot-db"] = {};
-    }
-
-    if (!params["bot-db"]["public"] || !params["bot-db"]["public"]["recipient"] || !params["bot-db"]["public"]["recipient"]["address"]) {
-        return {
-            markup: status.components.validationMessage(
-                "Wrong address",
-                "Recipient address must be specified"
-            )
-        };
     }
 
     if (!params["amount"]) {
@@ -325,7 +301,7 @@ function validateSend(params, context) {
     var fee = calculateFee(
         params["bot-db"]["sliderValue"],
         {
-            to: params["bot-db"]["public"]["recipient"]["address"],
+            to: context.to,
             value: val
         }
     );
@@ -347,7 +323,7 @@ function handleSend(params, context) {
 
     var data = {
         from: context.from,
-        to: params["bot-db"]["public"]["recipient"]["address"],
+        to: context.to,
         value: val,
         gasPrice: calculateGasPrice(params["bot-db"]["sliderValue"])
     };
@@ -403,7 +379,7 @@ function previewSend(params, context) {
         )]
     );
 
-    var firstRow = status.components.view(
+    var row = status.components.view(
         {
             style: {
                 flexDirection: "row",
@@ -415,26 +391,6 @@ function previewSend(params, context) {
         [amount, currency]
     );
 
-    var markup;
-    if (params["bot-db"]
-        && params["bot-db"]["public"]
-        && params["bot-db"]["public"]["recipient"]
-        && context["chat"]["group-chat"] === true) {
-        var secondRow = status.components.text(
-            {
-                style: {
-                    color: "#9199a0",
-                    fontSize: 14,
-                    lineHeight: 18
-                }
-            },
-            I18n.t('send_sending_to') + " " + params["bot-db"]["public"]["recipient"]["name"]
-        );
-        markup = [firstRow, secondRow];
-    } else {
-        markup = [firstRow];
-    }
-
     return {
         markup: status.components.view(
             {
@@ -442,7 +398,7 @@ function previewSend(params, context) {
                     flexDirection: "column"
                 }
             },
-            markup
+            [row]
         )
     };
 }
@@ -460,6 +416,12 @@ function shortPreviewSend(params, context) {
 
 var send = {
     name: "send",
+    scope: {
+        isGlobal: false,
+        personalChats: true,
+        groupChats: false,
+        canUseForDApps: false
+    },
     icon: "money_white",
     color: "#5fc48d",
     title: I18n.t('send_title'),
@@ -476,16 +438,6 @@ status.response(send);
 
 var paramsRequest = [
     {
-        name: "recipient",
-        type: status.types.TEXT,
-        suggestions: function (params) {
-            return {
-                title: I18n.t('request_title'),
-                markup: status.components.chooseContact(I18n.t('send_choose_recipient'), "recipient", 0)
-            };
-        }
-    },
-    {
         name: "amount",
         type: status.types.NUMBER
     }
@@ -493,6 +445,12 @@ var paramsRequest = [
 
 status.command({
     name: "request",
+    scope: {
+        isGlobal: false,
+        personalChats: true,
+        groupChats: false,
+        canUseForDApps: false
+    },
     color: "#5fc48d",
     title: I18n.t('request_title'),
     description: I18n.t('request_description'),
@@ -505,48 +463,19 @@ status.command({
             request: {
                 command: "send",
                 params: {
-                    recipient: context["current-account"]["name"],
                     amount: val
                 },
-                prefill: [context["current-account"]["name"], val],
-                prefillBotDb: {
-                    public: {
-                        recipient: context["current-account"]
-                    }
-                }
+                prefill: [val]
             }
         };
     },
     preview: function (params, context) {
-        var firstRow = status.components.text(
+        var row = status.components.text(
             {},
             I18n.t('request_requesting') + " "
             + status.localizeNumber(params.amount, context.delimiter, context.separator)
             + " ETH"
         );
-
-        var markup;
-
-        if (params["bot-db"]
-            && params["bot-db"]["public"]
-            && params["bot-db"]["public"]["recipient"]
-            && context["chat"]["group-chat"] === true) {
-
-            var secondRow = status.components.text(
-                {
-                    style: {
-                        color: "#9199a0",
-                        fontSize: 14,
-                        lineHeight: 18
-                    }
-                },
-                I18n.t('request_requesting_from') + " " + params["bot-db"]["public"]["recipient"]["name"]
-            );
-            markup = [firstRow, secondRow];
-        } else {
-            markup = [firstRow];
-        }
-
         return {
             markup: status.components.view(
                 {
@@ -554,7 +483,7 @@ status.command({
                         flexDirection: "column"
                     }
                 },
-                markup
+                [row]
             )
         };
     },
@@ -573,14 +502,6 @@ status.command({
             params["bot-db"] = {};
         }
 
-        if (!params["bot-db"]["public"] || !params["bot-db"]["public"]["recipient"] || !params["bot-db"]["public"]["recipient"]["address"]) {
-            return {
-                markup: status.components.validationMessage(
-                    "Wrong address",
-                    "Recipient address must be specified"
-                )
-            };
-        }
         if (!params["amount"]) {
             return {
                 markup: status.components.validationMessage(

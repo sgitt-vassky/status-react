@@ -2,17 +2,14 @@
   (:require-macros
     [cljs.core.async.macros :refer [go-loop go]])
   (:require [status-im.components.react :as r]
-            [status-im.utils.types :as t]
             [re-frame.core :refer [dispatch]]
             [taoensso.timbre :as log]
             [cljs.core.async :refer [<! timeout]]
             [status-im.utils.js-resources :as js-res]
             [status-im.utils.platform :as p]
             [status-im.utils.scheduler :as scheduler]
+            [status-im.utils.types :as types]
             [status-im.react-native.js-dependencies :as rn-dependencies]))
-
-(defn cljs->json [data]
-  (.stringify js/JSON (clj->js data)))
 
 ;; if StatusModule is not initialized better to store
 ;; calls and make them only when StatusModule is ready
@@ -124,7 +121,7 @@
   [hashes password callback]
   (log/debug :complete-transactions (boolean status) hashes)
   (when status
-    (call-module #(.completeTransactions status (cljs->json hashes) password callback))))
+    (call-module #(.completeTransactions status (types/clj->json hashes) password callback))))
 
 (defn discard-transaction
   [id]
@@ -142,19 +139,20 @@
       #(do
          (log/debug :call-jail :jail-id jail-id)
          (log/debug :call-jail :path path)
-         ;; this debug message can contain sensetive info
+         ;; this debug message can contain sensitive info
          #_(log/debug :call-jail :params params)
          (let [params' (update params :context assoc
                                :debug js/goog.DEBUG
                                :locale rn-dependencies/i18n.locale)
                cb      (fn [r]
-                         (let [{:keys [result] :as r'} (t/json->clj r)
+                         (let [{:keys [result] :as r'} (types/json->clj r)
                                {:keys [messages]} result]
+                           (log/debug "ALWX response from jail" jail-id path r)
                            (log/debug r')
                            (doseq [{:keys [type message]} messages]
                              (log/debug (str "VM console(" type ") - " message)))
                            (callback r')))]
-           (.callJail status jail-id (cljs->json path) (cljs->json params') cb))))))
+           (.callJail status jail-id (types/clj->json path) (types/clj->json params') cb))))))
 
 (defn call-function!
   [{:keys [chat-id function callback] :as opts}]

@@ -3,11 +3,15 @@
             [clojure.string :as str]
             [re-frame.core :refer [reg-fx reg-cofx inject-cofx dispatch trim-v]]
             [taoensso.timbre :as log]
-            [status-im.data-store.messages :as msg-store]
-            [status-im.utils.handlers :refer [register-handler-fx]]
+            [status-im.chat.constants :as const]
+            [status-im.chat.models.commands :as commands-model]
             [status-im.components.status :as status]
+            [status-im.commands.utils :as commands-utils]
+            [status-im.data-store.messages :as msg-store]
             [status-im.i18n :as i18n]
-            [status-im.utils.platform :as platform]))
+            [status-im.utils.handlers :refer [register-handler-fx]]
+            [status-im.utils.platform :as platform]
+            [status-im.utils.types :as types]))
 
 ;;;; Helper fns
 
@@ -68,19 +72,22 @@
  :request-command-data
  [trim-v]
  (fn [{:keys [db]}
-      [{{:keys [command content-command params type]} :content
+      [{{command-name         :command
+         content-command-name :content-command
+         :keys                [content-command-scope scope params type bot]} :content
         :keys [chat-id jail-id group-id] :as message}
        data-type]]
-   (let [{:keys          [chats]
+   (let [{:keys [chats]
           :accounts/keys [current-account-id]
           :contacts/keys [contacts]} db
-         jail-id (or jail-id chat-id)
+         jail-id (or bot jail-id chat-id)
          jail-id (if (get-in chats [jail-id :group-chat])
                    (get-in chats [jail-id :command-suggestions (keyword command) :owner-id])
                    jail-id)]
      (if (get-in contacts [jail-id :commands-loaded?])
        (let [path          [(if (= :response (keyword type)) :responses :commands)
-                            (or content-command command)
+                            [(if content-command-name content-command-name command-name)
+                             (commands-model/scope->int (or scope content-command-scope))]
                             data-type]
              to            (get-in contacts [chat-id :address])
              jail-params   {:parameters params

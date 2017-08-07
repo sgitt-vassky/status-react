@@ -6,13 +6,21 @@ var _status_catalog = {
     },
     status = {};
 
+function transformScope(scope) {
+    return (scope["global?"] ? 1 : 0) |
+        (scope["registered-only?"] ? 2 : 0) |
+        (scope["personal-chats?"] ? 4 : 0) |
+        (scope["group-chats?"] ? 8 : 0) |
+        (scope["can-use-for-dapps?"] ? 16 : 0);
+}
+
 function Command() {
 }
 function Response() {
 }
 
 Command.prototype.addToCatalog = function () {
-    _status_catalog.commands[this.name] = this;
+    _status_catalog.commands[[this.name, this.scope.hash]] = this;
 };
 
 Command.prototype.param = function (parameter) {
@@ -26,8 +34,7 @@ Command.prototype.create = function (com) {
     this.title = com.title;
     this.description = com.description;
     this.handler = com.handler;
-    this["has-handler"] = com.handler != null;
-    this["registered-only"] = com.registeredOnly;
+    this["has-handler"] = com.handler !== null;
     this.validator = com.validator;
     this.color = com.color;
     this.icon = com.icon;
@@ -41,6 +48,16 @@ Command.prototype.create = function (com) {
     this["execute-immediately?"] = com.executeImmediately;
     this["sequential-params"] = com.sequentialParams;
     this["hide-send-button"] = com.hideSendButton;
+
+    // scopes
+    this["scope"] = {};
+    this["scope"]["global?"] = com["scope"] != null && com["scope"]["isGlobal"] === true;
+    this["scope"]["registered-only?"] = com["scope"] != null && com["scope"]["registeredOnly"] === true;
+    this["scope"]["personal-chats?"] = com["scope"] == null || com["scope"]["personalChats"] === true;
+    this["scope"]["group-chats?"] = com["scope"] == null || com["scope"]["groupChats"] === true;
+    this["scope"]["can-use-for-dapps?"] = com["scope"] == null || com["scope"]["canUseForDApps"] === true;
+    this["scope"]["hash"] = transformScope(this["scope"]);
+
     this.addToCatalog();
 
     return this;
@@ -49,7 +66,7 @@ Command.prototype.create = function (com) {
 
 Response.prototype = Object.create(Command.prototype);
 Response.prototype.addToCatalog = function () {
-    _status_catalog.responses[this.name] = this;
+    _status_catalog.responses[[this.name, 0]] = this;
 };
 Response.prototype.onReceiveResponse = function (handler) {
     this.onReceive = handler;
