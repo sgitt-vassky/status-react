@@ -44,7 +44,12 @@
 
             [status-im.ui.screens.wallet.send.views :refer [send-transaction]]
             [status-im.ui.screens.wallet.wallet-list.views :refer [wallet-list-screen]]
-            [status-im.ui.screens.wallet.history.views :as wallet-history]))
+            [status-im.ui.screens.wallet.history.views :as wallet-history]
+
+            [status-im.ui.screens.network-settings.views :refer [network-settings]]
+            [status-im.ui.screens.network-settings.add-rpc.views :refer [add-rpc-url]]
+            [status-im.ui.screens.network-settings.network-details.views :refer [network-details]]
+            [status-im.ui.screens.network-settings.parse-json.views :refer [paste-json-text]]))
 
 (defn validate-current-view
   [current-view signed-up?]
@@ -89,7 +94,12 @@
                           :accounts accounts
                           :login login
                           :recover recover
+                          :network-settings network-settings
+                          :paste-json-text paste-json-text
+                          :add-rpc-url add-rpc-url
+                          :network-details network-details
                           (throw (str "Unknown view: " current-view)))]
+
 
           [(if android? menu-context view) common-styles/flex
            [view common-styles/flex

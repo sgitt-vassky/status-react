@@ -97,8 +97,11 @@
 
 (register-handler-fx
   :add-account
-  (fn [{{:keys [network] :as db} :db} [_ {:keys [address] :as account}]]
-    (let [account' (assoc account :network network)]
+  (fn [{{:keys          [network]
+         :networks/keys [networks]
+         :as            db} :db} [_ {:keys [address] :as account}]]
+    (let [account' (assoc account :network network
+                                  :networks networks)]
       {:db            (assoc-in db [:accounts/accounts address] account')
        ::save-account account'})))
 
@@ -142,11 +145,9 @@
 
 (register-handler-fx
   :account-update
-  (fn [{{:keys          [network]
-         :accounts/keys [accounts current-account-id] :as db} :db} [_ new-account-fields]]
-    (let [current-account (get accounts current-account-id)
-          new-account-fields' (assoc new-account-fields :network (or (:network current-account) network))
-          new-account (update-account current-account new-account-fields')]
+  (fn [{{:accounts/keys [accounts current-account-id] :as db} :db} [_ new-account-fields]]
+    (let [current-account     (get accounts current-account-id)
+          new-account         (update-account current-account new-account-fields)]
       {:db                        (assoc-in db [:accounts/accounts current-account-id] new-account)
        ::save-account             new-account
        ::broadcast-account-update (merge
@@ -161,8 +162,8 @@
     (let [{:accounts/keys [accounts current-account-id]} db
           {:keys [public private]} keypair
           current-account (get accounts current-account-id)
-          new-account (update-account current-account {:updates-public-key  public
-                                                       :updates-private-key private})]
+          new-account     (update-account current-account {:updates-public-key  public
+                                                           :updates-private-key private})]
       {:db                (assoc-in db [:accounts/accounts current-account-id] new-account)
        ::save-account     new-account
        ::send-keys-update (merge
@@ -174,7 +175,7 @@
   :send-account-update-if-needed
   (fn [{{:accounts/keys [accounts current-account-id]} :db} _]
     (let [{:keys [last-updated]} (get accounts current-account-id)
-          now (time/now-ms)
+          now           (time/now-ms)
           needs-update? (> (- now last-updated) time/week)]
       (log/info "Need to send account-update: " needs-update?)
       (when needs-update?

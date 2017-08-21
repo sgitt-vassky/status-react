@@ -1,5 +1,5 @@
 (ns status-im.components.drawer.view
-  (:require-macros [status-im.utils.views :refer [defview]])
+  (:require-macros [status-im.utils.views :refer [defview letsubs]])
   (:require [cljs.spec.alpha :as s]
             [clojure.string :as str]
             [reagent.core :as r]
@@ -136,10 +136,11 @@
                :uppercase? platform/android?}
          (i18n/label :t/view-all)]]])))
 
-(defn current-network []
-  [view {:style st/network-label-container}
-   [text {:style st/network-label} (i18n/label :t/current-network)]
-   [text {:style st/network-title} "Ropsten"]])
+(defview current-network []
+  (letsubs [{:keys [name]} [:get-current-account-network]]
+    [view {:style st/network-label-container}
+     [text {:style st/network-label} (i18n/label :t/current-network)]
+     [text {:style st/network-title} name]]))
 
 (defn options-btn []
   [view {:style st/options-button}

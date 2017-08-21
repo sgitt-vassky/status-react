@@ -70,9 +70,14 @@
   (when status
     (call-module #(.moveToInternalStorage status on-result))))
 
-(defn start-node [on-result]
+
+(defn stop-node []
   (when status
-    (call-module #(.startNode status on-result))))
+    (call-module #(.stopNode status))))
+
+(defn start-node [config]
+  (when status
+    (call-module #(.startNode status config))))
 
 (defn stop-rpc-server []
   (when status
