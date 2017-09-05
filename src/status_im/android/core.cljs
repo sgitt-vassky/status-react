@@ -8,7 +8,7 @@
             status-im.data-store.core
             [status-im.ui.screens.views :as views]
             [status-im.components.react :as react]
-            [status-im.components.status :as status]
+            [status-im.native-module.core :as status]
             [status-im.utils.utils :as utils]))
 
 (defn init-back-button-handler! []
@@ -71,7 +71,7 @@
 
 (defn init []
   (utils/register-exception-handler)
-  (status/call-module status/init-jail)
+  (status/init-jail)
   (.registerComponent react/app-registry "StatusIm" #(reagent/reactify-component app-root))
   (status/set-soft-input-mode status/adjust-resize)
   (init-back-button-handler!)

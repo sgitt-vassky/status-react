@@ -3,7 +3,7 @@
             [status-im.utils.handlers :as handlers]
             [status-im.utils.prices :as prices]
             [status-im.ui.screens.wallet.db :as wallet.db]
-            [status-im.components.status :as status]
+            [status-im.native-module.core :as status]
             [taoensso.timbre :as log]))
 
 (defn get-balance [{:keys [web3 account-id on-success on-error]}]

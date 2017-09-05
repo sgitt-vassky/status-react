@@ -5,7 +5,7 @@
             [taoensso.timbre :as log]
             [status-im.data-store.messages :as msg-store]
             [status-im.utils.handlers :refer [register-handler-fx]]
-            [status-im.components.status :as status]
+            [status-im.native-module.core :as status]
             [status-im.chat.constants :as const]
             [status-im.commands.utils :as commands-utils]
             [status-im.i18n :as i18n]
