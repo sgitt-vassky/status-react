@@ -67,8 +67,8 @@
       [rn/text {:style (if (pos? change) wallet-styles/today-variation-positive wallet-styles/today-variation-negative)}
        change]]]
     [btn/buttons wallet-styles/buttons
-     [{:text     (i18n/label :t/wallet-send)
-       :on-press show-not-implemented! ;; #(rf/dispatch [:navigate-to :wallet-send-transaction])
+     [{:text      (i18n/label :t/wallet-send)
+       :on-press  #(rf/dispatch [:navigate-to :wallet-send-transaction])
        :disabled? (not config/wallet-wip-enabled?)}
       {:text     (i18n/label :t/wallet-request)
        :on-press show-not-implemented! ;; #(rf/dispatch [:navigate-to :wallet-request-transaction])

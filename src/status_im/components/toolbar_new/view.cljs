@@ -47,7 +47,13 @@
    [rn/view {:style tst/toolbar-title-container}
     [rn/text {:style (merge tst/toolbar-title-text title-style)
               :font  :toolbar-title}
-     title]]))
+     title]])
+  ([title-style title subtitle-style subtitle]
+   [rn/view {:style tst/toolbar-title-container}
+    [rn/text {:style (merge tst/toolbar-title-text title-style)
+              :font  :toolbar-title}
+     title]
+    [rn/text {:style subtitle-style} subtitle]]))
 
 ;; Actions
 
