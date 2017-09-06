@@ -11,6 +11,7 @@
 (def color-black "#000000")
 (def color-purple "#a187d5")
 (def color-gray-transparent-light "rgba(0, 0, 0, 0.1)")
+(def color-gray-transparent-medium-light "rgba(0, 0, 0, 0.2)")
 (def color-gray-transparent "rgba(0, 0, 0, 0.4)")
 (def color-gray "#838c93de")
 (def color-gray2 "#8f838c93")

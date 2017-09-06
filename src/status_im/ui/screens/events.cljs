@@ -16,6 +16,7 @@
             status-im.ui.screens.profile.events
             status-im.ui.screens.qr-scanner.events
             status-im.ui.screens.wallet.events
+            status-im.ui.screens.wallet.send.events
             [re-frame.core :refer [dispatch reg-fx]]
             [status-im.components.status :as status]
             [status-im.components.permissions :as permissions]
@@ -273,4 +274,3 @@
  (fn [_ _]
    (notifications/get-fcm-token)
    {}))
-

@@ -1,6 +1,7 @@
 (ns status-im.ui.screens.wallet.send.views
   (:require-macros [status-im.utils.views :refer [defview letsubs]])
   (:require [status-im.components.react :as rn]
+            [re-frame.core :as re-frame]
             [status-im.components.button.view :as button]
             [status-im.components.styles :as styles]
             [status-im.components.toolbar-new.actions :as act]
@@ -24,7 +25,10 @@
       "Choose from Contacts"]
      [vector-icons/icon :icons/contacts {:color :white
                                          :container-style cst/recipient-icon}]]]
-   [rn/touchable-highlight {:style (cst/recipient-touchable true)}
+   [rn/touchable-highlight {:style (cst/recipient-touchable true)
+                            :on-press #(rn/get-from-clipboard
+                                        (fn [clipboard]
+                                          (re-frame/dispatch [:choose-recipient clipboard])))}
     [rn/view {:style cst/recipient-button}
      [rn/text {:style cst/recipient-button-text}
       "Use Address from Clipboard"]]]
