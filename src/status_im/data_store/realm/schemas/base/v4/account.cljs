@@ -29,5 +29,6 @@
   (let [accounts (.objects new-realm "account")]
     (dotimes [i (.-length accounts)]
       (let [account (aget accounts i)]
-        (aset account "network" constants/default-network)
-        (aset account "networks" (clj->js (vals constants/default-networks)))))))
+        (aset account "network" constants/default-network)))))
+        ;; creation of network object crashes the app
+        ;(aset account "networks" (clj->js (vals constants/default-networks)))))))
