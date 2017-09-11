@@ -16,13 +16,13 @@
     (log/debug step description))
   {:error description})
 
-(defn init-scope [js-error js-message context]
+(defn init-scope [js-error js-message options]
   (if js-error
     (create-error :init-scope-error (-> js-error js->clj str))
     {:message (js->clj js-message :keywordize-keys true)
-     :context context}))
+     :options options}))
 
-(defn parse-payload [{:keys [message error context] :as scope}]
+(defn parse-payload [{:keys [message error options] :as scope}]
   (log/debug :parse-payload)
   (if error
     scope
@@ -36,28 +36,28 @@
                          (r/read-string (u/to-utf8 payload')))]
         (if (map? payload''')
           {:message (assoc message :payload payload''')
-           :context context}
+           :options options}
           (create-error :parse-payload-error (str "Invalid payload type " (type payload''')))))
       (catch :default err
         (create-error :parse-payload-error  err)))))
 
-(defn filter-messages-from-same-user [{:keys [message error context] :as scope}]
+(defn filter-messages-from-same-user [{:keys [message error options] :as scope}]
   (if error
     scope
-    (if (or (not= (i/normalize-hex (:identity context))
+    (if (or (not= (i/normalize-hex (:identity options))
                   (i/normalize-hex (:sig message)))
                   ;; allow user to receive his own discoveries
                   (= type :discover))
          scope
          (create-error :filter-messages-error :silent))))
 
-(defn parse-content [{:keys [message error context] :as scope}]
+(defn parse-content [{:keys [message error options] :as scope}]
   (if error
     scope
     (try
       (let [to             (:recipientPublicKey message)
             from           (:sig message)
-            key            (get-in context [:keypair :private])
+            key            (get-in options [:keypair :private])
             raw-content    (get-in message [:payload :content])
             encrypted?     (and (empty-public-key? to) key raw-content)
             content        (if encrypted?
@@ -70,14 +70,14 @@
                       (assoc-in [:payload :content] content)
                       (assoc :to to
                              :from from))
-         :context context})
+         :options options})
       (catch :default err
         (create-error :parse-content-error err)))))
 
-(defn handle-message [{:keys [message error context] :as scope}]
+(defn handle-message [{:keys [message error options] :as scope}]
   (if error
     scope
-    (let [{:keys [web3 identity callback]} context
+    (let [{:keys [web3 identity callback]} options
           {:keys [payload sig]}            message
           ack?                            (get-in message [:payload :ack?])]
       (log/debug :handle-message message)
@@ -85,9 +85,10 @@
       (ack/check-ack! web3 sig payload identity))))
 
 (defn message-listener
-  [{:keys [web3 identity callback keypair] :as context}]
+  "Valid options are: web3, identity, callback, keypair"
+  [options]
   (fn [js-error js-message]
-    (-> (init-scope js-error js-message context)
+    (-> (init-scope js-error js-message options)
         parse-payload
         filter-messages-from-same-user
         parse-content
