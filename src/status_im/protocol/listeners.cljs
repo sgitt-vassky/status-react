@@ -58,9 +58,9 @@
       (let [to             (:recipientPublicKey message)
             from           (:sig message)
             key            (get-in context [:keypair :private])
-            was-encrypted? (not (empty-public-key? to))
             raw-content    (get-in message [:payload :content])
-            content        (if (and (not was-encrypted?) key raw-content)
+            encrypted?     (and (empty-public-key? to) key raw-content)
+            content        (if encrypted?
                              (r/read-string (e/decrypt key raw-content))
                              raw-content)]
         (log/debug :parse-content
