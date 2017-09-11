@@ -24,11 +24,6 @@
    :elevation        0})
 
 (def toolbar-title-container
-  {:flex           1
-   :flex-direction :row
-   :margin-left    6})
-
-(def toolbar-title-inner-container
   {:flex-direction :row})
 
 (def toolbar-title-text
@@ -43,19 +38,12 @@
 (def toolbar-title-icon
   (merge toolbar-icon {:opacity 0.4}))
 
-(def toolbar-buttons-container
-  {:flex-direction  :row
-   :flex-shrink     1
-   :justify-content :space-between
-   :width           68
-   :padding         12})
-
 ;;;;;;;;;;;;;;;;;;
 ;; Main section ;;
 ;;;;;;;;;;;;;;;;;;
 
 (def main-section
-  {:padding          16
+  {:padding          24
    :background-color styles/color-blue4})
 
 (def total-balance-container
