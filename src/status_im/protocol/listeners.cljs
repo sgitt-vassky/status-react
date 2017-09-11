@@ -27,7 +27,7 @@
   (if error
     scope
     (try
-      ;; todo figure why we have to call to-utf8 twice
+      ;; todo figure why we sometimes have to call to-utf8 twice and sometimes only once
       (let [payload    (:payload message)
             payload'   (u/to-utf8 payload)
             payload''  (r/read-string payload')
