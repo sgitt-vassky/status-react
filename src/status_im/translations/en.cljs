@@ -346,6 +346,7 @@
    :wallet-total-value                    "Total value"
    :wallet-settings                       "Wallet Settings"
    :transactions                          "Transactions"
+   :transaction-details                   "Transaction details"
    :transactions-sign                     "Sign"
    :transactions-sign-all                 "Sign all"
    :transactions-sign-all-text            "Sign the transaction by entering your password.\nMake sure that the words above match your secret signing phrase"

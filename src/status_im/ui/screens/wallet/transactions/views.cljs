@@ -67,12 +67,14 @@
    [list/item-icon (transaction-type->icon type)]
    [list/item-content
     (str value " " symbol)
-    (if to
+    (if (inbound? type)
       (str (i18n/label :t/to) " " to)
       (str (i18n/label :t/from) " " from))
     (when (unsigned? type)
       [action-buttons m])]
-   [list/item-icon {:icon :icons/forward}]])
+   [react/touchable-highlight {:on-press #(re-frame/dispatch [:navigate-to-modal :wallet-transaction-details ])}
+    [react/view
+     [list/item-icon {:icon :icons/forward}]]]])
 
 ;; TODO(yenda) hook with re-frame
 (defn- empty-text [s] [react/text {:style transactions.styles/empty-text} s])
@@ -186,3 +188,11 @@
     [react/view {:style transactions.styles/wallet-transactions-container}
      [toolbar-view view-id unsigned-transactions]
      [main-section view-id tabs]]))
+
+(defview transaction-details []
+  ;;(letsubs [transaction-details [:wallet.transactions/transaction-details]])
+  [react/view {:style transactions.styles/wallet-transactions-container}
+   [toolbar/toolbar2 {}
+    toolbar/default-nav-back
+    [toolbar/content-title (i18n/label :t/transaction-details)]]
+   [react/text "hello"]])

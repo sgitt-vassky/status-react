@@ -10,9 +10,13 @@
   (fn [db]
     (get-in db [:wallet :errors :transactions-update])))
 
+(reg-sub :wallet.transactions/transaction-details
+  (fn [db transaction-hash]
+    (get-in db [:wallet :transactions transaction-hash])))
+
 (reg-sub :wallet.transactions/transactions
   (fn [db]
-    (group-by :type (get-in db [:wallet :transactions]))))
+    (group-by :type (vals (get-in db [:wallet :transactions])))))
 
 (reg-sub :wallet.transactions/unsigned-transactions
   :<- [:wallet.transactions/transactions]

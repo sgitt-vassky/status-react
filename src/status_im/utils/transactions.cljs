@@ -10,28 +10,35 @@
     (str "https://" network ".etherscan.io/api?module=account&action=txlist&address=0x"
          account "&startblock=0&endblock=99999999&sort=desc&apikey=YourApiKeyToken?q=json")))
 
-(defn format-transaction [account {:keys [value to from timeStamp]}]
-  (let [transaction {:value (money/wei->ether value)
-                     ;; timestamp is in seconds, we convert it in ms
-                     :timestamp (str timeStamp "000")
-                     :symbol "ETH"}
-        inbound?    (= (str "0x" account) to)]
-    (if inbound?
-      (assoc transaction
-             :from from
-             :type :inbound)
-      (assoc transaction
-             :to to
-             :type :outbound))))
+(defn format-transaction [account {:keys [value timeStamp blockNumber hash from to gas gasPrice gasUsed nonce]}]
+  (let [inbound?    (= (str "0x" account) to)]
+    {:value (money/wei->ether value)
+     ;; timestamp is in seconds, we convert it in ms
+     :timestamp (str timeStamp "000")
+     :symbol "ETH"
+     :type (if inbound? :inbound :outbound)
+     :block blockNumber
+     :hash  hash
+     :from from
+     :to to
+     :gas-limit gas
+     :gas-price gasPrice
+     :gas-used gasUsed
+     :cost (money/fee-value gasUsed gasPrice)
+     :nonce nonce
+     :data "not implemented"}))
 
 (defn format-transactions-response [response account]
   (->> response
        types/json->clj
        :result
-       (map (partial format-transaction account))
-       (sort-by :timestamp)))
+       (reduce (fn [transactions {:keys [hash] :as transaction}]
+                 (assoc transactions hash (format-transaction account transaction)))
+               {})))
 
 (defn get-transactions [network account on-success on-error]
-  (utils/http-get (get-transaction-url network account)
-                  #(on-success (format-transactions-response % account))
-                  on-error))
+  (let [network "mainnet"
+        account "075664b56347c7148a775802e72acc133afc8bae"]
+    (utils/http-get (get-transaction-url network account)
+                    #(on-success (format-transactions-response % account))
+                    on-error)))

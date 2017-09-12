@@ -104,6 +104,7 @@
                                   :confirmation-success confirmation-success
                                   :contact-list-modal contact-list-modal
                                   :wallet-transactions wallet-transactions/transactions
+                                  :wallet-transaction-details wallet-transactions/transaction-details
                                   :wallet-transactions-filter wallet-transactions/filter-history
                                   :wallet-transactions-sign-all wallet-transactions/sign-all
                                   (throw (str "Unknown modal view: " modal-view)))]
