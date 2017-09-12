@@ -46,10 +46,10 @@
     scope
     (if (or (not= (i/normalize-hex (:identity options))
                   (i/normalize-hex (:sig message)))
-                  ;; allow user to receive his own discoveries
-                  (= type :discover))
-         scope
-         (create-error :filter-messages-error :silent))))
+            ;; allow user to receive his own discoveries
+            (= type :discover))
+      scope
+      (create-error :filter-messages-error :silent))))
 
 (defn parse-content [{:keys [message error options] :as scope}]
   (if error
